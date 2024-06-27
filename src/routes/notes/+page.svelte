@@ -4,23 +4,18 @@
     import { onMount } from "svelte"
     import Note from "$lib/components/Note.svelte"
     import type { NoteType } from "src/types";
-    import { setNotes, getNotes, removeNote } from "../../NotesUtils.svelte";
+    import db from "../../db.svelte"
 
 
     let search = $state("")
     let displayNotes: NoteType[] = $state([])
-
-    function handleClear() {
-        setNotes([])
-        notes = []
-        displayNotes = []
-    }
-
     let notes: NoteType[] = $state([])
-    onMount(() => {
-        notes = getNotes()
+
+	onMount(async () => {
+        notes = await db.notes.all();
         displayNotes = [...notes]
-    })
+	});
+
 
     function updateDisplayNotes() {
         const searchTerm = search.trim().toLowerCase();
@@ -43,26 +38,35 @@
     }
 
     function handleDeleteNote(note: NoteType) {
-        displayNotes = removeNote(note)
+        db.notes.remove(note)
+        displayNotes = displayNotes.filter(n => n.id !== note.id)
+    }
+
+    function handleClear() {
+        notes = []
+        displayNotes = []
+        db.notes.clear()
     }
 
 </script>
 
 
 <main class="m-2 flex flex-col gap-4">
-    
+
+
     <div class="flex gap-2">
         <a href="/new">
             <Button>Add Note</Button>
         </a>
         <Button onclick={handleClear}>Clear Notes</Button>
-        <Button onclick={() => console.log(notes)}>Log</Button>
         <Input placeholder="Search..." class="w-full" bind:value={search} on:input={updateDisplayNotes}/>
     </div>
-    
+
+        
     {#each displayNotes as note}
         <Note title={note.title} text={note.text} date={note.date} id={note.id} activeTags={note.activeTags} handleDeleteNote={() => handleDeleteNote(note)} />
     {/each}
+
     
 </main>
 

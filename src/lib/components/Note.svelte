@@ -1,8 +1,7 @@
 <script lang="ts">
 	import ActiveTag from './ActiveTag.svelte';
-	import { handleTagNoteRemove } from '../../NotesUtils.svelte';
     import type { TagType, InputProps } from 'src/types';
-
+	import db from "../../db.svelte"
 
 	let {
 		title = '',
@@ -23,7 +22,8 @@
 	}
 
 	function handleTagPermaRemove(tag: TagType) {
-		activeTags = handleTagNoteRemove(tag, note)
+		db.notes.removeActiveTag(note, tag)
+		activeTags = activeTags.filter(t => t.name !== tag.name)
 	}
 </script>
 
@@ -46,7 +46,7 @@
 				<li>ID: {id}</li>
 			</div>
 
-			Tags:
+			Tags: 
 			{#each activeTags as tag}
 				<ActiveTag
 					name={tag.name}

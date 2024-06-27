@@ -8,20 +8,21 @@
 	import { v4 as uuid } from 'uuid';
 	import { onMount } from 'svelte';
 	import Tag from '$lib/components/Tag.svelte';
-	import { getNotes, setNotes, getTags, setTags } from '../../NotesUtils.svelte';
+
+	import db from '../../db.svelte';
 
 	// ADD NEW NOTE SYSTEM
 	let activeTags: TagType[] = $state([]);
 	let title: string = $state('');
 	let text: string = $state('');
-	const id: string = uuid().slice(0, 10);
+	const id: string = uuid();
 	let d = new Date();
 	let date = `${d.getDate()}/${d.getMonth()}/${d.getFullYear()}`;
 	let note = $derived({ title, text, date, id, activeTags });
 	let notes: NoteType[] = $state([]);
 
-	onMount(() => {
-		notes = getNotes();
+	onMount(async () => {
+		notes = await db.notes.all();
 	});
 
 	$effect(() => {
@@ -29,10 +30,11 @@
 			let note_to_edit_index = notes.findIndex((n) => n.id === id);
 			if (note_to_edit_index >= 0) {
 				notes[note_to_edit_index] = note;
+				db.notes.save(note);
 			} else {
 				notes = [...notes, note];
+				db.notes.add(note);
 			}
-			setNotes(notes)
 		}
 	});
 
@@ -42,32 +44,28 @@
 	let allTags: TagType[] = $state([]);
 	let tagsFocused = $state(false);
 
-	onMount(() => {
-		allTags = getTags();
-	});
-
-	$effect(() => {
-		allTags = getTags();
+	onMount(async () => {
+		allTags = await db.tags.all();
 	});
 
 	let colors = [
-		'bg-red-500',
-		'bg-orange-500',
-		'bg-amber-500',
-		'bg-yellow-500',
-		'bg-lime-500',
-		'bg-green-500',
-		'bg-emerald-500',
-		'bg-teal-500',
-		'bg-cyan-500',
-		'bg-sky-500',
-		'bg-blue-500',
-		'bg-indigo-500',
-		'bg-violet-500',
-		'bg-purple-500',
-		'bg-fuchsia-500',
-		'bg-pink-500',
-		'bg-rose-500'
+		'bg-red-500 text-red-900',
+		'bg-orange-500 text-orange-900',
+		'bg-amber-500 text-amber-900',
+		'bg-yellow-500 text-yellow-900',
+		'bg-lime-500 text-lime-900',
+		'bg-green-500 text-green-900',
+		'bg-emerald-500 text-emerald-900',
+		'bg-teal-500 text-teal-900',
+		'bg-cyan-500 text-cyan-900',
+		'bg-sky-500 text-sky-900',
+		'bg-blue-500 text-blue-900',
+		'bg-indigo-500 text-indigo-900',
+		'bg-violet-500 text-violet-900',
+		'bg-purple-500 text-purple-900',
+		'bg-fuchsia-500 text-fuchsia-900',
+		'bg-pink-500 text-pink-900',
+		'bg-rose-500 text-rose-900'
 	];
 
 	function tagAlreadyActive(selectedTag = tagInput) {
@@ -78,7 +76,7 @@
 		}
 		return false;
 	}
-
+	 
 	function createTag(tagName: string = tagInput) {
 		let newTag = { name: '', color: '' };
 		newTag.name = tagName;
@@ -86,9 +84,9 @@
 		newTag.color = colors[randomIndex];
 
 		activeTags.push(newTag);
-
-		allTags = [...allTags, newTag];
-		setTags(allTags)
+		db.notes.addActiveTag(note, newTag);
+		db.tags.addToAll(newTag);
+		allTags = [...allTags, newTag]
 	}
 
 	function handleTagSubmit() {
@@ -97,6 +95,7 @@
 			allTags.forEach((tag) => {
 				if (tag.name === tagInput) {
 					activeTags.push(tag);
+					db.notes.addActiveTag(note, tag);
 					tagFound = true;
 				}
 			});
@@ -108,26 +107,35 @@
 			tagInput = '';
 		}
 	}
-
+	
 	function handleTagClick(tag: TagType) {
+		console.log('tag clicked');
 		if (!tagAlreadyActive(tag.name)) {
+			console.log('tag clicked', tag);
 			activeTags.push(tag);
-			console.log(tagAlreadyActive(tag.name));
+			db.notes.addActiveTag(note, tag);
+
 		}
 	}
 
 	function handleRemoveTag(tag: TagType) {
 		activeTags = activeTags.filter((t) => t.name !== tag.name);
+		db.notes.removeActiveTag(note, tag);
 	}
 
 	function handleTagClear() {
-		setTags([])
+		db.tags.clearAllTags()
+		db.notes.clearActiveTags(note)
 		allTags = [];
 		activeTags = [];
 	}
 
 	function handleRandomTag() {
 		createTag(uuid().slice(0, 6));
+	}
+
+	function handleSwitchFocus() {
+		tagsFocused = !tagsFocused
 	}
 
 	$effect(() => {
@@ -142,8 +150,8 @@
 		<Input
 			class="w-30"
 			placeholder="Add a Tag"
-			on:focus={() => (tagsFocused = true)}
-			on:blur={() => (tagsFocused = false)}
+			onfocus={() => tagsFocused = true}
+			onblur={() => tagsFocused = false}
 			bind:value={tagInput}
 		></Input>
 		<input type="submit" hidden />

@@ -1,18 +1,29 @@
 <script>
-    import { Input } from "$lib/components/ui/input"
-    import { Button } from "$lib/components/ui/button"
+	import { Input } from '$lib/components/ui/input';
+	import { Button } from '$lib/components/ui/button';
+    import db from "../db.svelte";
+
+	let email = 'jamiebyers10@icloud.com';
+	let password = 'password';
+
+    function handleSignIn() {
+        db.signIn(email, password)
+    }
+
+    function handleSignUp() {
+        db.signUp(email, password)
+    }
 
 </script>
 
+
 <main>
-    <div class="flex justify-center items-center w-screen h-screen">
-
-        <form action="" class="flex flex-col gap-2">
-            <Input></Input>
-            <Input></Input>
-            <Button>Submit</Button>
-        </form>
-
-    </div>
-
+	<div class="flex h-screen w-screen items-center justify-center">
+		<form action="" class="flex flex-col gap-2">
+			<Input bind:value={email}></Input>
+			<Input bind:value={password}></Input>
+			<Button onclick={handleSignUp}>Sign up</Button>
+			<Button onclick={handleSignIn}>Log in</Button>
+		</form>
+	</div>
 </main>

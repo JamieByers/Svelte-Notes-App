@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { getNotes, setNotes } from 'src/NotesUtils.svelte';
     import type { NoteType } from './../../../types.ts';
     import { Input } from "$lib/components/ui/input"
     import { Button } from "$lib/components/ui/button"
@@ -7,7 +6,7 @@
     import { v4 as uuid } from 'uuid';
     import { onMount } from "svelte"
     import { page } from "$app/stores"
-
+    import db from "../../../db.svelte"
 
     let id = $page.params.noteid
 
@@ -17,8 +16,8 @@
     let note = $derived({title: "", text:"", id:"", date:"", activeTags: []})
     let notes: NoteType[] = $state([])
 
-    onMount(() => {
-        notes = getNotes()
+    onMount(async () => {
+        notes = await db.notes.all()
         let current_note = notes.find(n => n.id === id)!
         title = current_note.title
         text = current_note.text
@@ -30,10 +29,10 @@
             let note_to_edit_index = notes.findIndex(n => n.id === id);
             if (note_to_edit_index >= 0) {
                 notes[note_to_edit_index] = note
+
             } else {
                 notes = [...notes, note]
             }
-            setNotes(notes)
         }
     });
 
