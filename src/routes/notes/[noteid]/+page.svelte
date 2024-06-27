@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getNotes, setNotes } from 'src/NotesUtils.svelte';
     import type { NoteType } from './../../../types.ts';
     import { Input } from "$lib/components/ui/input"
     import { Button } from "$lib/components/ui/button"
@@ -17,7 +18,7 @@
     let notes: NoteType[] = $state([])
 
     onMount(() => {
-        notes = JSON.parse(localStorage.getItem("notes")!) || [];
+        notes = getNotes()
         let current_note = notes.find(n => n.id === id)!
         title = current_note.title
         text = current_note.text
@@ -32,9 +33,7 @@
             } else {
                 notes = [...notes, note]
             }
-            localStorage.setItem("notes", JSON.stringify(notes));
-            console.log('notes', notes)
-            console.log("             ")
+            setNotes(notes)
         }
     });
 
