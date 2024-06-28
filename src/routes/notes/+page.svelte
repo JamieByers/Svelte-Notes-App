@@ -8,7 +8,6 @@
     import type { NoteType } from "src/types";
     import db from "../../db.svelte"
 
-    console.log(db.user)
 
     let search = $state("")
     let displayNotes: NoteType[] = $state([])

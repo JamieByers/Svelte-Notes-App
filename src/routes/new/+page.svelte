@@ -113,9 +113,7 @@
 	}
 	
 	async function handleTagClick(tag: TagType) {
-		console.log('tag clicked');
 		if (!tagAlreadyActive(tag.name)) {
-			console.log('tag clicked', tag);
 			activeTags.push(tag);
 			await db.notes.addActiveTag(note, tag);
 
@@ -138,9 +136,6 @@
 		createTag(uuid().slice(0, 6));
 	}
 
-	$effect(() => {
-		console.log('notes', notes);
-	});
 </script>
 
 <div class="flex items-center gap-2">

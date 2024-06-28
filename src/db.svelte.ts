@@ -4,7 +4,6 @@ import type { NoteType, TagType } from './types';
 const PUBLIC_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const PUBLIC_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-
 let user: any = $state();
 
 supabase.auth.getSession().then(({ data }) => {
@@ -26,16 +25,15 @@ export default {
 	async signIn(email: string, password: string) {
 		console.log('SIGNING IN');
 		let signin = await supabase.auth.signInWithPassword({ email, password });
-		localStorage.setItem("supabaseToken", user.access_token)
+		localStorage.setItem('supabaseToken', user.access_token);
 		goto('http://localhost:5173/notes');
-		console.log(signin);
 	},
 	async signUp(email: string, password: string) {
 		goto('http://localhost:5173/notes');
 		return await supabase.auth.signUp({ email, password });
 	},
 	async signOut() {
-		localStorage.removeItem("supabaseToken")
+		localStorage.removeItem('supabaseToken');
 		return await supabase.auth.signOut();
 	},
 	notes: {
@@ -55,8 +53,6 @@ export default {
 				date: note.date,
 				activeTags: note.activeTags
 			});
-			console.log('ADDING NOTE TO DATABASE: ', note);
-			console.log(error);
 		},
 		async remove(note: NoteType) {
 			const { response } = await supabase.from('notes').delete().eq('id', note.id);
@@ -72,39 +68,65 @@ export default {
 					activeTags: note.activeTags
 				})
 				.eq('id', note.id);
-			console.log('UPDATING NOTE IN DATABASE: ', note);
-			console.log(error);
 		},
 		async note(note: NoteType) {
 			const { data, error } = await supabase.from('notes').select('id', note.id);
-			console.log(error);
 			return {
 				data
 			};
 		},
 		async getActiveTags(note: NoteType) {
-			return await supabase.from('notes').select('activeTags', note.id);
+			return await supabase.from('notes').select('activeTags').eq('id', note.id);
 		},
 		async addActiveTag(note: NoteType, tag: TagType) {
-			const { data, error } = await supabase.from('notes').select('activeTags', note.id);
-			console.log(error);
-			let notesWithNewTag = data;
-			console.log('Noteswithnewtag', notesWithNewTag);
-			// notesWithNewTag = [...notesWithNewTag, tag];
-			// await supabase.from('notes').update({ activeTags: notesWithNewTag }).eq('id', note.id);
-			// console.log("ADDED ", tag, "TO", note)
+			const { data, error } = await supabase.from('notes').select('activeTags').eq('id', note.id).single();
+			if (error) {
+				console.log(error);
+				return;
+			}
+			let activeTags = data.activeTags;
+			let activeTagsWithNewTag = [...activeTags, tag];
+
+			await supabase.from('notes').update({ activeTags: activeTagsWithNewTag }).eq('id', note.id);
+			console.log('ADDED ', tag, 'TO', note);
 		},
 		async removeActiveTag(note: NoteType, tag: TagType) {
-			const { data, error } = await supabase.from('notes').select('activeTags', note.id);
-			console.log(error);
-			const activeTags = data!;
-			let activeTagsWithoutTag = activeTags.filter((t: TagType) => t.name !== tag.name);
-			await supabase.from('notes').update({ activeTags: activeTagsWithoutTag }).eq('id', note.id);
-			console.log('REMOVED ', tag, 'FROM', note);
+			try {
+				const { data, error } = await supabase
+					.from('notes')
+					.select('activeTags')
+					.eq('id', note.id)
+					.single();
+				
+				if (error) {
+					console.error('Error fetching activeTags:', error);
+					return;
+				}
+
+
+				if (data && data.activeTags) {
+					const activeTags = data.activeTags;
+					
+					const activeTagsWithoutTag = activeTags.filter(t => t.name !== tag.name);
+					console.log("activeTagsWithoutTag:", activeTagsWithoutTag);
+
+					await supabase
+						.from('notes')
+						.update({ activeTags: activeTagsWithoutTag })
+						.eq('id', note.id);
+			
+
+					console.log('Removed', tag, 'from', note);
+				} else {
+					console.error('No activeTags found for the note.');
+				}
+			} catch (err) {
+				console.error('Unexpected error:', err);
+			}
 		},
+
 		async clearActiveTags(note: NoteType) {
 			const { error } = await supabase.from('notes').update({ activeTags: [] }).eq('id', note.id);
-			console.log(error);
 		},
 		async clear() {
 			await supabase.from('notes').delete().eq('user_id', user.id);
@@ -128,7 +150,6 @@ export default {
 		},
 		async clearAllTags() {
 			const { error } = await supabase.from('tags').delete().eq('user_id', user.id);
-			console.log(error);
 		}
 	}
 };
