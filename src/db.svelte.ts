@@ -97,7 +97,7 @@ export default {
 		async removeActiveTag(note: NoteType, tag: TagType) {
 			const { data, error } = await supabase.from('notes').select('activeTags', note.id);
 			console.log(error);
-			const activeTags = data;
+			const activeTags = data!;
 			let activeTagsWithoutTag = activeTags.filter((t: TagType) => t.name !== tag.name);
 			await supabase.from('notes').update({ activeTags: activeTagsWithoutTag }).eq('id', note.id);
 			console.log('REMOVED ', tag, 'FROM', note);

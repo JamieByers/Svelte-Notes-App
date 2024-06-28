@@ -89,14 +89,18 @@
 		allTags = [...allTags, newTag]
 	}
 
+	async function addActiveTag(tag: TagType) {
+		await db.notes.addActiveTag(note, tag);
+	}
+	 
 	function handleTagSubmit() {
 		if (tagInput && !tagAlreadyActive()) {
 			let tagFound = false;
 			allTags.forEach((tag) => {
 				if (tag.name === tagInput) {
 					activeTags.push(tag);
-					db.notes.addActiveTag(note, tag);
 					tagFound = true;
+					addActiveTag(tag)
 				}
 			});
 
@@ -108,34 +112,30 @@
 		}
 	}
 	
-	function handleTagClick(tag: TagType) {
+	async function handleTagClick(tag: TagType) {
 		console.log('tag clicked');
 		if (!tagAlreadyActive(tag.name)) {
 			console.log('tag clicked', tag);
 			activeTags.push(tag);
-			db.notes.addActiveTag(note, tag);
+			await db.notes.addActiveTag(note, tag);
 
 		}
 	}
 
-	function handleRemoveTag(tag: TagType) {
+	async function handleRemoveTag(tag: TagType) {
 		activeTags = activeTags.filter((t) => t.name !== tag.name);
-		db.notes.removeActiveTag(note, tag);
+		await db.notes.removeActiveTag(note, tag);
 	}
 
-	function handleTagClear() {
-		db.tags.clearAllTags()
-		db.notes.clearActiveTags(note)
+	async function handleTagClear() {
+		await db.tags.clearAllTags()
+		await db.notes.clearActiveTags(note)
 		allTags = [];
 		activeTags = [];
 	}
 
 	function handleRandomTag() {
 		createTag(uuid().slice(0, 6));
-	}
-
-	function handleSwitchFocus() {
-		tagsFocused = !tagsFocused
 	}
 
 	$effect(() => {
