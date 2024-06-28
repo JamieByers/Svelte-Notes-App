@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { supabase } from './../../supabaseClient';
+	import { goto } from '$app/navigation';
     import { Button } from "$lib/components/ui/button";
     import { Input } from "$lib/components/ui/input"
     import { onMount } from "svelte"
@@ -6,14 +8,17 @@
     import type { NoteType } from "src/types";
     import db from "../../db.svelte"
 
+    console.log(db.user)
 
     let search = $state("")
     let displayNotes: NoteType[] = $state([])
     let notes: NoteType[] = $state([])
 
 	onMount(async () => {
-        notes = await db.notes.all();
-        displayNotes = [...notes]
+        notes = await db.notes.all() || []
+        if (notes) {
+            displayNotes = [...notes]
+        }
 	});
 
 
@@ -48,13 +53,21 @@
         db.notes.clear()
     }
 
+    function handleSignOut() {
+        db.signOut()
+    }
+
 </script>
 
 
 <main class="m-2 flex flex-col gap-4">
 
+    {#if !db.user}
+        {goto("/")}
+    {/if}
 
     <div class="flex gap-2">
+        <Button onclick={handleSignOut}>Sign Out</Button>
         <a href="/new">
             <Button>Add Note</Button>
         </a>
