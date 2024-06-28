@@ -3,8 +3,8 @@
 	import { Button } from '$lib/components/ui/button';
     import db from "../db.svelte";
 
-	let email = 'jamiebyers10@icloud.com';
-	let password = 'password';
+	let email = '';
+	let password = '';
 
     function handleSignIn() {
         db.signIn(email, password)
