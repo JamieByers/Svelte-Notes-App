@@ -24,10 +24,10 @@ export default {
 		console.log('SIGNING IN');
 		let signin = await supabase.auth.signInWithPassword({ email, password });
 		localStorage.setItem('supabaseToken', user.access_token);
-		goto('http://localhost:5173/notes');
+		goto('/notes');
 	},
 	async signUp(email: string, password: string) {
-		goto('http://localhost:5173/notes');
+		goto('/notes');
 		return await supabase.auth.signUp({ email, password });
 	},
 	async signOut() {
