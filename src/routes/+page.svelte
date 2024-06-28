@@ -19,6 +19,8 @@
 
 <main>
 	<div class="flex h-screen w-screen items-center justify-center">
+		<p>Welcome!</p>
+
 		<form action="" class="flex flex-col gap-2">
 			<Input bind:value={email}></Input>
 			<Input bind:value={password}></Input>
