@@ -1,8 +1,6 @@
 import { supabase } from './supabaseClient';
 import { goto } from '$app/navigation';
 import type { NoteType, TagType } from './types';
-const PUBLIC_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const PUBLIC_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 let user: any = $state();
 
