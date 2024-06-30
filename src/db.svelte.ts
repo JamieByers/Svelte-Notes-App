@@ -32,7 +32,9 @@ export default {
 	},
 	async signUp(email: string, password: string) {
 		goto('/notes');
-		return await supabase.auth.signUp({ email, password });
+		const { error } = await supabase.auth.signUp({ email, password });
+		console.log('SIGN UP ERROR', error);
+		// return await supabase.auth.signUp({ email, password });
 	},
 	async signOut() {
 		localStorage.removeItem('supabaseToken');
