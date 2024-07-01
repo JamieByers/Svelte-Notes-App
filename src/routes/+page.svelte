@@ -88,7 +88,7 @@
 
 	<section class="h-full flex items-center justify-center w-7/12 ">
 
-		<form action="" class="flex flex-col gap-2 w-1/2">
+		<form action="" class="flex flex-col gap-2 w-1/2" onsubmit={handleSignIn}>
 			<Input bind:value={email} placeholder="Email... " class="w-full"></Input>
 			{#if emailError}
 				<p class="text-red-500 text-sm text-1">{emailErrorMessage}</p>
