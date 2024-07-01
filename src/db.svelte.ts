@@ -84,8 +84,8 @@ export default {
 					console.log('ERROR SAVING NOTE', error);
 				}
 		},
-		async note(note: NoteType) {
-			const { data, error } = await supabase.from('notes').select('id', note.id);
+		async note(note_id: string) {
+			const { data, error } = await supabase.from('notes').select().eq('id', note_id);
 			if (error) {
 				console.log('ERROR FETCHING NOTE', error);
 			}

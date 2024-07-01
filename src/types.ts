@@ -12,10 +12,6 @@ export type TagType = {
 };
 
 export interface InputProps {
-	title: string;
-	text: string;
-	date: string;
-	id: string;
-	activeTags: TagType[];
+	note: NoteType;
 	handleDeleteNote: () => void;
 }

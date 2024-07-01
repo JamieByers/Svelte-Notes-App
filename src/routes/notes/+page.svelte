@@ -1,20 +1,23 @@
 <script lang="ts">
+	import Group from './../../lib/components/Group.svelte';
 	import { supabase } from './../../supabaseClient';
 	import { goto } from '$app/navigation';
     import { Button } from "$lib/components/ui/button";
     import { Input } from "$lib/components/ui/input"
     import { onMount } from "svelte"
     import Note from "$lib/components/Note.svelte"
-    import type { NoteType } from "src/types";
+    import type { NoteType, TagType } from "src/types";
     import db from "../../db.svelte"
 
 
     let search = $state("")
     let displayNotes: NoteType[] = $state([])
     let notes: NoteType[] = $state([])
+    let allTags: TagType[] = $state([])
 
 	onMount(async () => {
         notes = await db.notes.all() || []
+        allTags = await db.tags.all() || []
         if (notes) {
             displayNotes = [...notes]
         }
@@ -74,10 +77,11 @@
         <Input placeholder="Search..." class="w-full" bind:value={search} on:input={updateDisplayNotes}/>
     </div>
 
-        
-    {#each displayNotes as note}
-        <Note title={note.title} text={note.text} date={note.date} id={note.id} activeTags={note.activeTags} handleDeleteNote={() => handleDeleteNote(note)} />
-    {/each}
+    <div class="w-screen grid grid-cols-2 gap-4 overflow-y-auto ">
+        {#each allTags as tag}
+            <Group tag={tag} />
+        {/each}
+    </div>
 
     
 </main>
