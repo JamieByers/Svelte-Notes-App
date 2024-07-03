@@ -12,7 +12,6 @@
 
 	let debug = false;
 
-
 	// ADD NEW NOTE SYSTEM
 	let activeTags: TagType[] = $state([]);
 	let title: string = $state('');
@@ -24,7 +23,16 @@
 	let notes: NoteType[] = $state([]);
 
 	onMount(async () => {
-		notes = await db.notes.all();
+		notes = (await db.notes.all()) || [];
+
+		console.log('BEFORE FETCHING', allTags);
+		allTags = (await db.tags.all()) || [];
+		console.log('AFTER FETCHING', allTags);
+		display_tags = allTags;
+
+		console.log('Page reloaded');
+		console.log('allTags', allTags);
+		console.log('display_tags', display_tags);
 	});
 
 	$effect(() => {
@@ -40,14 +48,19 @@
 		}
 	});
 
-	// TAGGING SYSTEM
-
 	let tagInput = $state('');
 	let allTags: TagType[] = $state([]);
 	let tagsFocused = $state(false);
+	let display_tags: TagType[] = $state([]);
 
-	onMount(async () => {
-		allTags = await db.tags.all();
+	$effect(() => {
+		if (tagInput.length > 0) {
+			display_tags = allTags.filter((tag: TagType) =>
+				tag.name.toLowerCase().includes(tagInput.toLowerCase())
+			);
+		} else {
+			display_tags = allTags;
+		}
 	});
 
 	let colors = [
@@ -78,7 +91,7 @@
 		}
 		return false;
 	}
-	 
+
 	function createTag(tagName: string = tagInput) {
 		let newTag = { name: '', color: '' };
 		newTag.name = tagName;
@@ -88,13 +101,9 @@
 		activeTags.push(newTag);
 		db.notes.addActiveTag(note, newTag);
 		db.tags.addToAll(newTag);
-		allTags = [...allTags, newTag]
+		allTags = [...allTags, newTag];
 	}
 
-	async function addActiveTag(tag: TagType) {
-		await db.notes.addActiveTag(note, tag);
-	}
-	 
 	function handleTagSubmit() {
 		if (tagInput && !tagAlreadyActive()) {
 			let tagFound = false;
@@ -102,7 +111,6 @@
 				if (tag.name === tagInput) {
 					activeTags.push(tag);
 					tagFound = true;
-					addActiveTag(tag)
 				}
 			});
 
@@ -113,7 +121,7 @@
 			tagInput = '';
 		}
 	}
-	
+
 	async function handleTagClick(tag: TagType) {
 		if (!tagAlreadyActive(tag.name)) {
 			activeTags.push(tag);
@@ -127,8 +135,8 @@
 	}
 
 	async function handleTagClear() {
-		await db.tags.clearAllTags()
-		await db.notes.clearActiveTags(note)
+		await db.tags.clearAllTags();
+		await db.notes.clearActiveTags(note);
 		allTags = [];
 		activeTags = [];
 	}
@@ -136,21 +144,23 @@
 	function handleRandomTag() {
 		createTag(uuid().slice(0, 6));
 	}
-
 </script>
 
 <main class="flex flex-col gap-2">
-
 	<div class="flex items-center justify-between gap-2">
-		<Input placeholder="Add Note Title... " bind:value={title} class="w-1/2 border-0 focus:border-0 focus:outline-none"></Input>
+		<Input
+			placeholder="Add Note Title... "
+			bind:value={title}
+			class="w-1/2 border-0 focus:border-0 focus:outline-none"
+		></Input>
 
 		<div class="flex flex-row gap-2">
 			<form class="min-w-1/4 relative" onsubmit={handleTagSubmit}>
 				<Input
 					class="w-30 border-0 focus:border-0 focus:outline-none"
 					placeholder="Add a Tag..."
-					onfocus={() => tagsFocused = true}
-					onblur={() => tagsFocused = false}
+					onfocus={() => (tagsFocused = true)}
+					onblur={() => (tagsFocused = false)}
 					bind:value={tagInput}
 				></Input>
 				<input type="submit" hidden />
@@ -158,47 +168,50 @@
 					<div
 						class="absolute mt-1 flex max-h-60 min-h-20 w-full flex-col gap-1.5 overflow-auto rounded-md border border-input bg-background p-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					>
-						{#each allTags as alltag}
-							<Tag name={alltag.name} color={alltag.color} handleClick={() => handleTagClick(alltag)} />
+						{#each display_tags as display_tag}
+							<Tag
+								name={display_tag.name}
+								color={display_tag.color}
+								handleClick={() => handleTagClick(display_tag)}
+							/>
 						{/each}
 					</div>
 				{/if}
 			</form>
-		
+
 			<Button
 				class="border-4 border-slate-800 bg-transparent text-black hover:text-white"
 				onclick={handleTagClear}>Clear Tags</Button
 			>
 		</div>
-		
+
 		{#if debug}
 			<Button
-			class="border-4 border-slate-800 bg-transparent text-black hover:text-white"
-			onclick={handleRandomTag}>Random Tag</Button
-			> 
+				class="border-4 border-slate-800 bg-transparent text-black hover:text-white"
+				onclick={handleRandomTag}>Random Tag</Button
+			>
 			<Button
-			class="border-4 border-slate-800 bg-transparent text-black hover:text-white"
-			onclick={() => (activeTags = allTags)}>Apply All</Button
+				class="border-4 border-slate-800 bg-transparent text-black hover:text-white"
+				onclick={() => (activeTags = allTags)}>Apply All</Button
 			>
 		{/if}
 	</div>
 
-	<Textarea placeholder="Add description" bind:value={text} class="h-screen border-0 focus:border-0 focus:outline-none m-0"></Textarea>
-
+	<Textarea
+		placeholder="Add description"
+		bind:value={text}
+		class="m-0 h-screen border-0 focus:border-0 focus:outline-none"
+	></Textarea>
 </main>
 
-
-
-<div class="flex flex-row items-center fixed bottom-0 left-0 m-2 gap-2">
+<div class="fixed bottom-0 left-0 m-2 flex flex-row items-center gap-2">
 	<div class="">
 		<a href="/notes" class=""><Button>Go Back</Button></a>
 	</div>
 
-	<div class="flex max-h-24 w-full flex-row flex-wrap gap-2 overflow-auto p-1 my-2">
+	<div class="my-2 flex max-h-24 w-full flex-row flex-wrap gap-2 overflow-auto p-1">
 		{#each activeTags as tag}
 			<Tag name={tag.name} color={tag.color} handleClick={() => handleRemoveTag(tag)} />
 		{/each}
 	</div>
-
-	
 </div>
