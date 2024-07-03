@@ -11,8 +11,18 @@ export type TagType = {
 	color: string;
 };
 
-export interface InputProps {
+export interface NoteInputProps {
 	note: NoteType;
-	activeTags: TagType[];
-	handleDeleteNote: () => void;
+	handleDeleteNote?: () => void;
+	activeTagRemovalCallback: (note: NoteType, activeTag: TagType) => void;
+}
+
+export interface GroupProps {
+	notes: NoteType[]
+	tag: TagType;
+	handleActiveTagRemoval: (note: NoteType, activeTag: TagType) => void
+}
+export interface UntaggedGroupProps {
+	notes_with_no_tags: NoteType[];
+	handleActiveTagRemoval: (note: NoteType, activeTag: TagType) => void;
 }
