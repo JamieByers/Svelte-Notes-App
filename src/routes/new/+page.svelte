@@ -24,15 +24,10 @@
 
 	onMount(async () => {
 		notes = (await db.notes.all()) || [];
-
-		console.log('BEFORE FETCHING', allTags);
 		allTags = (await db.tags.all()) || [];
-		console.log('AFTER FETCHING', allTags);
 		display_tags = allTags;
 
 		console.log('Page reloaded');
-		console.log('allTags', allTags);
-		console.log('display_tags', display_tags);
 	});
 
 	$effect(() => {
@@ -63,6 +58,18 @@
 		}
 	});
 
+	async function fetchAllTags() {
+		allTags = await db.tags.all() || []
+		display_tags = allTags
+	}
+
+	$effect(() => {
+		if (tagsFocused) {
+			fetchAllTags()
+		}
+	})
+
+
 	let colors = [
 		'bg-red-500 text-red-200',
 		'bg-orange-500 text-orange-200',
@@ -86,22 +93,23 @@
 	function tagAlreadyActive(selectedTag = tagInput) {
 		for (let tag of activeTags) {
 			if (tag.name === selectedTag) {
+				tagInput = ""
 				return true;
 			}
 		}
 		return false;
 	}
 
-	function createTag(tagName: string = tagInput) {
+	async function createTag(tagName: string = tagInput) {
 		let newTag = { name: '', color: '' };
 		newTag.name = tagName;
 		let randomIndex = Math.floor(Math.random() * colors.length);
 		newTag.color = colors[randomIndex];
 
 		activeTags.push(newTag);
-		db.notes.addActiveTag(note, newTag);
-		db.tags.addToAll(newTag);
 		allTags = [...allTags, newTag];
+		await db.notes.addActiveTag(note, newTag);
+		await db.tags.addToAll(newTag);
 	}
 
 	function handleTagSubmit() {
@@ -166,15 +174,15 @@
 				<input type="submit" hidden />
 				{#if tagsFocused && allTags}
 					<div
-						class="absolute mt-1 flex max-h-60 min-h-20 w-full flex-col gap-1.5 overflow-auto rounded-md border border-input bg-background p-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+						class="absolute mt-1 flex max-h-60 min-h-10 w-full flex-col gap-1.5 overflow-auto rounded-md border border-input bg-background p-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					>
-						{#each display_tags as display_tag}
-							<Tag
-								name={display_tag.name}
-								color={display_tag.color}
-								handleClick={() => handleTagClick(display_tag)}
-							/>
-						{/each}
+						{#if allTags.length > 0}
+							{#each allTags as alltag}
+								<Tag name={alltag.name} color={alltag.color} handleClick={() => handleTagClick(alltag)} />
+							{/each}
+						{:else}
+							<h1 class="opacity-40">No Tags</h1>
+						{/if}
 					</div>
 				{/if}
 			</form>
