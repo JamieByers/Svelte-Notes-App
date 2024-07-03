@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Group from './../../lib/components/Group.svelte';
+    import UntaggedGroup from '$lib/components/UntaggedGroup.svelte';
 	import { supabase } from './../../supabaseClient';
 	import { goto } from '$app/navigation';
     import { Button } from "$lib/components/ui/button";
@@ -83,6 +84,7 @@
         {/each}
     </div>
 
+    <UntaggedGroup />
     
 </main>
 

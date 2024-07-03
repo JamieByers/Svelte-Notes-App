@@ -6,14 +6,15 @@
 
 	let {
 		note,
+		activeTags,
 		handleDeleteNote
 	}: InputProps = $props();
 
-	let activeTags = $state(note.activeTags);
+	// let activeTags = $state(note.activeTags);
 
 	function handleTagPermaRemove(tag: TagType) {
 		db.notes.removeActiveTag(note, tag)
-		activeTags = activeTags.filter(t => t.name !== tag.name)
+		note.activeTags = note.activeTags.filter(t => t.name !== tag.name)
 	}
 </script>
 

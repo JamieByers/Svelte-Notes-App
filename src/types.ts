@@ -13,5 +13,6 @@ export type TagType = {
 
 export interface InputProps {
 	note: NoteType;
+	activeTags: TagType[];
 	handleDeleteNote: () => void;
 }
