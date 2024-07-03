@@ -12,7 +12,6 @@
 
 	let debug = false;
 
-	// ADD NEW NOTE SYSTEM
 	let activeTags: TagType[] = $state([]);
 	let title: string = $state('');
 	let text: string = $state('');
@@ -78,7 +77,7 @@
 		'bg-lime-500 text-lime-200',
 		'bg-green-500 text-green-200',
 		'bg-emerald-500 text-emerald-200',
-		'bg-teal-500 text-teal-50',
+		'bg-teal-500 text-teal-200',
 		'bg-cyan-500 text-cyan-200',
 		'bg-sky-500 text-sky-200',
 		'bg-blue-500 text-blue-200',
