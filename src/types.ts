@@ -14,7 +14,7 @@ export type TagType = {
 export interface NoteInputProps {
 	note: NoteType;
 	handleDeleteNote?: () => void;
-	activeTagRemovalCallback: (note: NoteType, activeTag: TagType) => void;
+	activeTagRemovalCallback?: (note: NoteType, activeTag: TagType) => void;
 }
 
 export interface GroupProps {

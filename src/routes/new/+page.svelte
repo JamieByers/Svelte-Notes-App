@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { NoteType, TagType } from './../../types.ts';
-	import ActiveTag from './../../lib/components/ActiveTag.svelte';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -11,6 +10,7 @@
 	import db from '../../db.svelte';
 
 	let debug = false;
+
 
 	let activeTags: TagType[] = $state([]);
 	let title: string = $state('');
